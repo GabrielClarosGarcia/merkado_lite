@@ -17,6 +17,8 @@ import { Promotion } from "./promotion/promotion.entity"
 import { PriceHistory } from "./price_history/price_history.entity"
 import { Delivery } from "./delivery/delivery.entity"
 import {Notification} from "./notification/notification.entity"
+import { Cart } from "./cart/cart.entity"
+import { CartItem } from "./cart_item/cart_item.entity"
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -28,7 +30,7 @@ export const AppDataSource = new DataSource({
     synchronize: true,
     logging: true,
     entities: [Role, User, Product, Category, Order, OrderDetail, Supplier, Inventory, InStoreSale, InStoreSaleDetail, 
-        PurchaseOrder, Customer, AuditLog, Notification, Return, Promotion, PriceHistory, Delivery],
+        PurchaseOrder, Customer, AuditLog, Notification, Return, Promotion, PriceHistory, Delivery, Cart, CartItem],
     subscribers: [],
     migrations: [],
 })

@@ -1,80 +1,77 @@
-"use client"; // Necesario en App Router para usar hooks
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { loginUser } from "../app/login/loginService";
+import styles from "../app/login/LoginPage.module.css";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
 
     if (!email || !password) {
       setError("Por favor ingresa email y contraseña");
       return;
     }
 
-    // Simulación de login correcto
-    router.push("/Home");
+    setLoading(true);
+    try {
+      const response = await loginUser({ email, password });
+      localStorage.setItem("token", response.token);
+      router.push("/Home");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Credenciales incorrectas");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex relative bg-gradient-to-r from-red-700 via-red-600 to-red-500">
-      {/* --- LADO IZQUIERDO (formulario) --- */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-white/90 backdrop-blur-sm">
-        <div className="w-full max-w-sm p-8 bg-white rounded-2xl shadow-2xl border border-red-100">
+    <div className={styles.container}>
+      <div className={styles.leftSide}>
+        <div className={styles.formWrapper}>
           <h1 className="text-4xl font-extrabold mb-8 text-center text-red-600 tracking-tight">
             Login
           </h1>
 
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form onSubmit={handleLogin} className="space-y-6">
             <input
               type="email"
               placeholder="Correo electrónico"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition shadow-sm"
+              className={styles.input}
             />
-
             <input
               type="password"
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition shadow-sm"
+              className={styles.input}
             />
-
-            {error && (
-              <p className="text-red-600 text-sm text-center font-medium">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              className="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300 font-semibold shadow-md hover:shadow-lg"
-            >
-              Iniciar sesión
+            {error && <p className={styles.error}>{error}</p>}
+            <button type="submit" className={styles.button} disabled={loading}>
+              {loading ? "Iniciando..." : "Iniciar sesión"}
             </button>
           </form>
 
           <div className="text-center mt-4">
-            <a
-              href="/Register"
-              className="text-red-600 font-medium hover:text-red-800 transition"
-            >
+            <a href="/Register" className="text-red-600 font-medium hover:text-red-800 transition">
               Crear cuenta
             </a>
           </div>
         </div>
       </div>
 
-      {/* --- LADO DERECHO (imagen) --- */}
-      <div className="hidden md:flex w-1/2 items-center justify-center bg-black/30 backdrop-blur-md">
+      <div className={styles.rightSide}>
         <Image
           src="/Imagines/Logo.jpg"
           alt="Logo de la app"

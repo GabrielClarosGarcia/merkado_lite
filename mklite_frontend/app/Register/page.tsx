@@ -3,96 +3,113 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { registerUser } from "./userService";
+import { User } from "./User";
+import { Modal } from "@/components/Modal";
+import styles from "./RegisterPage.module.css";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [nombre, setNombre] = useState("");
-  const [ci, setCi] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState<User>({
+    name: "",
+    ci: "",
+    phone: "",
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
 
-    if (!nombre || !ci || !telefono || !email || !password) {
+    if (!form.name || !form.ci || !form.phone || !form.email || !form.password) {
       setError("Por favor completa todos los campos");
       return;
     }
 
-    // Aquí iría la llamada real a tu backend
+    setLoading(true);
+    try {
+      await registerUser(form);
+      setShowModal(true);
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
     router.push("/");
   };
 
   return (
-    <div className="min-h-screen flex relative bg-gradient-to-r from-red-700 via-red-600 to-red-500">
-      {/* --- LADO IZQUIERDO --- */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-white/90 backdrop-blur-sm">
-        <div className="w-full max-w-sm p-8 bg-white rounded-2xl shadow-2xl border border-red-100">
+    <div className={styles.container}>
+      <div className={styles.leftSide}>
+        <div className={styles.formWrapper}>
           <h1 className="text-4xl font-extrabold mb-8 text-center text-red-600 tracking-tight">
             Registro
           </h1>
 
-          <form className="space-y-6" onSubmit={handleRegister}>
+          <form onSubmit={handleRegister}>
             <input
               type="text"
+              name="name"
               placeholder="Nombre completo"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition shadow-sm"
+              value={form.name}
+              onChange={handleChange}
+              className={styles.input}
             />
-
             <input
               type="text"
+              name="ci"
               placeholder="Cédula de Identidad (CI)"
-              value={ci}
-              onChange={(e) => setCi(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition shadow-sm"
+              value={form.ci}
+              onChange={handleChange}
+              className={styles.input}
             />
-
             <input
               type="tel"
+              name="phone"
               placeholder="Teléfono"
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition shadow-sm"
+              value={form.phone}
+              onChange={handleChange}
+              className={styles.input}
             />
-
             <input
               type="email"
+              name="email"
               placeholder="Correo electrónico"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition shadow-sm"
+              value={form.email}
+              onChange={handleChange}
+              className={styles.input}
             />
-
             <input
               type="password"
+              name="password"
               placeholder="Contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition shadow-sm"
+              value={form.password}
+              onChange={handleChange}
+              className={styles.input}
             />
 
-            {error && (
-              <p className="text-red-600 text-sm text-center font-medium">
-                {error}
-              </p>
-            )}
+            {error && <p className="text-red-600 text-sm text-center font-medium">{error}</p>}
 
-            <button
-              type="submit"
-              className="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300 font-semibold shadow-md hover:shadow-lg"
-            >
-              Registrarme
+            <button type="submit" className={styles.button} disabled={loading}>
+              {loading ? "Registrando..." : "Registrarme"}
             </button>
           </form>
         </div>
       </div>
 
-      {/* --- LADO DERECHO (IMAGEN) --- */}
-      <div className="hidden md:flex w-1/2 items-center justify-center bg-black/30 backdrop-blur-md">
+      <div className={styles.rightSide}>
         <Image
           src="/Imagines/Logo.jpg"
           alt="Logo de registro"
@@ -101,6 +118,8 @@ export default function RegisterPage() {
           className="object-contain drop-shadow-2xl"
         />
       </div>
+
+      {showModal && <Modal message="Tu usuario ha sido creado correctamente." onClose={closeModal} />}
     </div>
   );
 }

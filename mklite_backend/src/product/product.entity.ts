@@ -49,4 +49,7 @@ export class Product {
 
   @OneToMany(() => PriceHistory, (hist) => hist.product)
   priceHistory: PriceHistory[];
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  image_url: string;
 }
