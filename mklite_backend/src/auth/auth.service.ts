@@ -1,33 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
-    private jwtService: JwtService,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async login(email: string, password: string) {
     const user = await this.userService.validateUser(email, password);
-    if (!user) throw new Error('Credenciales incorrectas');
 
-    const payload = {
-      sub: user.id_user,
-      email: user.email,
-      role: user.role?.name,
-    };
+    if (!user) {
+      throw new HttpException('Credenciales incorrectas', HttpStatus.UNAUTHORIZED);
+    }
 
-    const token = this.jwtService.sign(payload);
+    const payload = { sub: user.id_user, email: user.email, role: user.role?.name };
 
     return {
-      message: 'Login exitoso',
-      token,
+      message: 'Inicio de sesión exitoso',
+      token: this.jwtService.sign(payload),
       user: {
         id: user.id_user,
         email: user.email,
-        role: user.role,
+        role: user.role?.name,
       },
     };
   }
