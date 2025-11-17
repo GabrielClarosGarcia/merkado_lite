@@ -44,7 +44,7 @@ export default function HomePage() {
           <div key={product.id} className={styles.card} onClick={() => handleCardClick(product)}>
             <div className={styles.cardImage}>
               <img 
-                src={product.image || "/Imagines/arroz.jpg"} 
+                src={product.image || "/Imagines/arroz.jpeg"} 
                 alt={product.nombre} 
                 style={{ width: "100%", height: "100%", objectFit: "cover" }} 
               />
