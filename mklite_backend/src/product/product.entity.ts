@@ -6,6 +6,7 @@ import { OrderDetail } from "../order_detail/order_detail.entity";
 import { InStoreSaleDetail } from 'src/instore_sale_detail/instore_sale_detail.entity';
 import { Promotion } from '../promotion/promotion.entity';
 import { PriceHistory } from '../price_history/price_history.entity';
+import { CartItem } from 'src/cart_item/cart_item.entity';
 
 @Entity('product')
 export class Product {
@@ -49,6 +50,9 @@ export class Product {
 
   @OneToMany(() => PriceHistory, (hist) => hist.product)
   priceHistory: PriceHistory[];
+
+  @OneToMany(() => CartItem, (item) => item.product)
+  cartItems: CartItem[];
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   image_url: string;
