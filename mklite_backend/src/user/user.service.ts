@@ -1,58 +1,60 @@
-// user.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { AppDataSource } from 'src/data-source';
-import { User } from './user.entity';
-import { Role } from '../role/role.entity';
+import { User } from 'src/user/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { Role } from 'src/role/role.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  async createUser(userData: Partial<User>) {
-  if (!userData) throw new Error('No se recibió data del usuario');
+  async createUser(data: CreateUserDto) {
+    // 1. Verificar email duplicado
+    const existing = await AppDataSource.manager.findOneBy(User, {
+      email: data.email,
+    });
 
-  const role = await AppDataSource.manager.findOneBy(Role, { id_role: 1 });
-  if (!role) throw new Error('Role no encontrado');
+    if (existing) {
+      throw new BadRequestException('El email ya esta registrado');
+    }
 
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(userData.password, salt);
+    // 2. Hashear password
+    const hashedPassword = await bcrypt.hash(data.password, 10);
 
-  const user = AppDataSource.manager.create(User, {
-    ...userData,
-    password: hashedPassword,
-    role,
-  });
+    // 3. Buscar rol "cliente"
+    const clientRole = await AppDataSource.manager.findOneBy(Role, {
+      name: 'cliente',
+    });
 
-  return await AppDataSource.manager.save(User, user);
-}
+    if (!clientRole) {
+      throw new BadRequestException(
+        'No se encontro el rol cliente. Debes crearlo en la tabla ROLE'
+      );
+    }
 
+    // 4. Crear usuario con rol cliente
+    const newUser = AppDataSource.manager.create(User, {
+      ...data,
+      password: hashedPassword,
+      role: clientRole,
+    });
+
+    // 5. Guardar usuario
+    return AppDataSource.manager.save(User, newUser);
+  }
 
   async getAllUsers() {
-    return await AppDataSource.manager.find(User);
+    return AppDataSource.manager.find(User);
   }
 
   async getUserById(id: number) {
-    return await AppDataSource.manager.findOneBy(User, { id_user: id });
+    return AppDataSource.manager.findOneBy(User, { id_user: id });
   }
 
   async DeleteUser(id: number) {
-    return await AppDataSource.manager.delete(User, { id_user: id });
+    return AppDataSource.manager.delete(User, { id_user: id });
   }
 
-  async UpdateUser(id: number, userData: Partial<User>) {
-    return await AppDataSource.manager.update(User, { id_user: id }, userData);
-  }
-
-  async findByEmail(email: string) {
-    return await AppDataSource.manager.findOneBy(User, { email });
-  }
-
-  async validateUser(email: string, password: string) {
-    const user = await this.findByEmail(email);
-    if (!user) return null;
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return null;
-
-    return user;
+  async UpdateUser(id: number, data: Partial<CreateUserDto>) {
+    return AppDataSource.manager.update(User, { id_user: id }, data);
   }
 }
