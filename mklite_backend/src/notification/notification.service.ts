@@ -1,22 +1,40 @@
 import { Injectable } from "@nestjs/common";
 import { AppDataSource } from "src/data-source";
 import { Notification } from "./notification.entity";
+import { User } from "../user/user.entity";
 
 @Injectable()
 export class NotificationService {
     async sendNotification(message: string, userId: number) {
-        // Lógica para enviar una notificación al usuario con userId
-        console.log(`Enviando notificación al usuario ${userId}: ${message}`);
-        // Aquí podrías integrar con un servicio de correo electrónico, SMS, etc.
+        const userRepo = AppDataSource.getRepository(User);
+        const notifRepo = AppDataSource.getRepository(Notification);
+
+        const user = await userRepo.findOne({
+            where: { id_user: userId },
+        });
+
+        if (!user) {
+            console.log('User ${userId} not found for notification');
+            return;
+        }
+
+        const notif = new Notification();
+        notif.user = user;
+        notif.message = message;
+
+        await notifRepo.save(notif);
     }
 
     async getNotificationsForUser(userId: number) {
-        // Lógica para obtener notificaciones del usuario con userId
-        console.log(`Obteniendo notificaciones para el usuario ${userId}`);
-        // Aquí podrías consultar una base de datos o un servicio externo
-        return [
-            { id: 1, message: "Notificación 1 para el usuario " + userId },
-            { id: 2, message: "Notificación 2 para el usuario " + userId },
-        ];
-    } 
+        const notifRepo = AppDataSource.getRepository(Notification);
+
+        const notifications = await notifRepo
+            .createQueryBuilder("notif")
+            .leftJoin("notif.user", "user")
+            .where("user.id_user = :userId", { userId })
+            .orderBy("notif.date", "DESC")
+            .getMany();
+
+        return notifications;
+    }
 }
