@@ -118,4 +118,18 @@ export class InventoryService {
     return { message: 'Verificación de vencimientos completada' };
   }
 
+  async getProductsByExpiration(status?: 'normal' | 'expiring_soon' | 'expired') {
+    const query = AppDataSource.manager
+        .getRepository(Inventory)
+        .createQueryBuilder('inv')
+        .leftJoinAndSelect('inv.product', 'product');
+
+    if (status) {
+        query.where('inv.status = :status', { status });
+    }
+
+    return query.getMany();
+}
+
+
 }

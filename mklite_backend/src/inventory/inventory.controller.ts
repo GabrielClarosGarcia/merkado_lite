@@ -1,6 +1,8 @@
 import { Controller, Get, Patch, Body, Param, Post } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { UpdateInventoryDto } from './dto/update_inventory.dto';
+import { Query } from '@nestjs/common';
+import { FilterExpirationDto } from './dto/filter_expiration.dto';
 
 @Controller('/inventory')
 export class InventoryController {
@@ -34,5 +36,10 @@ export class InventoryController {
     @Get('/check-expirations')
   async checkExpirations() {
     return this.inventoryService.checkExpirations();
+  }
+
+  @Get('/expiring-products')
+  async getExpiringProducts(@Query() filter: FilterExpirationDto) {
+    return this.inventoryService.getProductsByExpiration(filter.status);
   }
 }
