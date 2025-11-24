@@ -18,4 +18,7 @@ export class Inventory {
 
   @Column({ nullable: true })
   location: string;
+
+  @Column({ type: 'enum', enum: ['normal', 'expiring_soon', 'expired'], default: 'normal' })
+  status: string; // flag para vencimiento
 }

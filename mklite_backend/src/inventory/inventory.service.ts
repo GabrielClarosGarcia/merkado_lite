@@ -75,4 +75,47 @@ export class InventoryService {
     .getMany();
     }
 
+    async checkExpirations() {
+    const today = new Date();
+    const sevenDays = new Date();
+    sevenDays.setDate(today.getDate() + 7);
+
+    const inventories = await AppDataSource.manager.find(Inventory, {
+      relations: ['product']
+    });
+
+    const users = await AppDataSource.manager.find(User, {
+      where: { role: { name: 'Administrador' } }, 
+      relations: ['role']
+    });
+
+    const sellers = await AppDataSource.manager.find(User, {
+      where: { role: { name: 'Vendedor' } },
+      relations: ['role']
+    });
+
+    for (const inv of inventories) {
+      if (!inv.product.expiration_date) continue;
+
+      let newStatus: 'normal' | 'expiring_soon' | 'expired' = 'normal';
+
+      if (inv.product.expiration_date < today) newStatus = 'expired';
+      else if (inv.product.expiration_date <= sevenDays) newStatus = 'expiring_soon';
+
+      if (inv.status !== newStatus) {
+        inv.status = newStatus;
+        await AppDataSource.manager.save(Inventory, inv);
+
+        if (newStatus !== 'normal') {
+          const message = `El producto ${inv.product.name} está ${newStatus.replace('_', ' ')}.`;
+          for (const user of [...users, ...sellers]) {
+            await this.notificationService.sendNotification(message, user.id_user);
+          }
+        }
+      }
+    }
+
+    return { message: 'Verificación de vencimientos completada' };
+  }
+
 }

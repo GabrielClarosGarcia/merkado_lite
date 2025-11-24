@@ -30,4 +30,9 @@ export class InventoryController {
     getLowStock() {
         return this.inventoryService.getLowStockItems();
     }
+
+    @Get('/check-expirations')
+  async checkExpirations() {
+    return this.inventoryService.checkExpirations();
+  }
 }
