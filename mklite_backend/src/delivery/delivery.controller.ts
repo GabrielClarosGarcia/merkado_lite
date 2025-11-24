@@ -1,18 +1,16 @@
-import { Controller, Post, Param, Body } from '@nestjs/common';
+import { Controller, Param, Body, Put } from '@nestjs/common';
 import { DeliveryService } from './delivery.service';
+import { DeliverDto } from './dto/deliver.dto';
 
-@Controller ('/delivery')
+@Controller('delivery')
 export class DeliveryController {
-    
-    constructor(private readonly deliveryService: DeliveryService) {}
-    
-    @Post('/deliver/:orderId')
-    deliverOrder(@Param('orderId') orderId: number) {
-        return this.deliveryService.deliverOrder(orderId);
-    }
+  constructor(private readonly deliveryService: DeliveryService) {}
 
-    @Post('/schedule/:orderId')
-    scheduleDelivery(@Param('orderId') orderId: number, @Body('scheduledDate') scheduledDate: Date) {
-        return this.deliveryService.scheduleDelivery(orderId, scheduledDate);
-    }
+  @Put('deliver/:orderId')
+  deliverOrder(
+    @Param('orderId') orderId: number,
+    @Body() deliverDto: DeliverDto,
+  ) {
+    return this.deliveryService.deliverOrder(orderId, deliverDto);
+  }
 }

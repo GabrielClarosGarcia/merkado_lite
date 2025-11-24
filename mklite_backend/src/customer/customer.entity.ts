@@ -22,6 +22,6 @@ export class Customer {
   orders: Order[];
 
   @OneToOne(() => Cart, (cart) => cart.customer)
-  cart: Cart[];
+  cart: Cart;
 
 }

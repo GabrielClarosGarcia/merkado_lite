@@ -7,13 +7,17 @@ export class Cart {
   @PrimaryGeneratedColumn()
   id_cart: number;
 
-  @OneToOne(() => Customer, (customer) => customer.cart)
+  @OneToOne(() => Customer, customer => customer.cart)
   @JoinColumn({ name: 'id_customer' })
   customer: Customer;
 
-  @Column({ type: 'enum', enum: ['active', 'ordered'], default: 'active' })
+  @Column({
+    type: 'enum',
+    enum: ['active', 'ordered'],
+    default: 'active'
+  })
   status: string;
 
-  @OneToMany(() => CartItem, (item) => item.cart, { cascade: true})
+  @OneToMany(() => CartItem, item => item.cart, { cascade: true })
   items: CartItem[];
 }
