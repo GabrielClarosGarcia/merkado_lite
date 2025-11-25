@@ -5,12 +5,14 @@ import { Product } from '../product/product.entity';
 import { UpdateInventoryDto } from './dto/update_inventory.dto';
 import { NotificationService } from '../notification/notification.service';
 import { User } from 'src/user/user.entity';
+import { PromotionService } from 'src/promotion/promotion.service';
 
 @Injectable()
 export class InventoryService {
 
     constructor(
         private readonly notificationService: NotificationService,
+        private readonly promotionService: PromotionService,
     ) {}
 
   // obtener inventario completo
@@ -77,8 +79,8 @@ export class InventoryService {
 
     async checkExpirations() {
     const today = new Date();
-    const sevenDays = new Date();
-    sevenDays.setDate(today.getDate() + 7);
+    const fifteenDays = new Date();
+    fifteenDays.setDate(today.getDate() + 15);
 
     const inventories = await AppDataSource.manager.find(Inventory, {
       relations: ['product']
@@ -100,7 +102,7 @@ export class InventoryService {
       let newStatus: 'normal' | 'expiring_soon' | 'expired' = 'normal';
 
       if (inv.product.expiration_date < today) newStatus = 'expired';
-      else if (inv.product.expiration_date <= sevenDays) newStatus = 'expiring_soon';
+      else if (inv.product.expiration_date <= fifteenDays) newStatus = 'expiring_soon';
 
       if (inv.status !== newStatus) {
         inv.status = newStatus;
@@ -114,6 +116,7 @@ export class InventoryService {
         }
       }
     }
+    await this.promotionService.generateAutoPromotions();
 
     return { message: 'Verificación de vencimientos completada' };
   }

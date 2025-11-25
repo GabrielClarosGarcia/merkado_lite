@@ -45,7 +45,7 @@ export class Product {
   @OneToMany(() => InStoreSaleDetail, (dv) => dv.product)
   saleDetails: InStoreSaleDetail[];
 
-  @OneToMany(() => Promotion, (promo) => promo.product)
+  @OneToMany(() => Promotion, (promo) => promo.products)
   promotions: Promotion[];
 
   @OneToMany(() => PriceHistory, (hist) => hist.product)

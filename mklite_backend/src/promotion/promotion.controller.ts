@@ -31,4 +31,9 @@ export class PromotionController {
   remove(@Param('id') id: string) {
     return this.promotionService.remove(+id);
   }
+
+  @Get('/generate-auto')
+async generateAutoPromos() {
+  return this.promotionService.generateAutoPromotions();
+}
 }

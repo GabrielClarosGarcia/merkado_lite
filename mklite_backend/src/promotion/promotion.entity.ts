@@ -44,4 +44,7 @@ export class Promotion {
     inverseJoinColumn: { name: 'id_product' },
   })
   products: Product[];
+
+  @Column({ type: 'boolean', default: false })
+is_auto: boolean;
 }
