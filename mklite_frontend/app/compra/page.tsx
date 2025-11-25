@@ -414,12 +414,6 @@ export default function CompraPage() {
           </div>
         </div>
       </main>
-
-      <footer className={styles.footer}>
-        <span>© ic norte 2023. todos los derechos reservados.</span>
-        <a href="/politica-de-privacidad">Política de Privacidad</a>
-        <a href="/terminos-y-condiciones">Términos y Condiciones</a>
-      </footer>
     </div>
   );
 }
