@@ -121,7 +121,7 @@ export class PromotionService {
     return { message: "No hay productos próximos a vencer" };
   }
 
-  const promotionsToCreate = [];
+  const promotionsToCreate : Promotion[] = [];
 
   for (const inv of inventories) {
     const product = inv.product;
