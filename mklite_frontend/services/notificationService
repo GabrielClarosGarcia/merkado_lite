@@ -1,0 +1,25 @@
+import api from "../services/api";
+
+// 👉 READ (Obtener notificaciones por usuario)
+export const getNotificationsByUser = async (userId: number) => {
+  try {
+    const response = await api.get(`/notification/user/${userId}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Error obteniendo notificaciones"
+    );
+  }
+};
+
+// 👉 UPDATE (Marcar notificación como leída)
+export const markNotificationAsRead = async (id: number) => {
+  try {
+    const response = await api.patch(`/notification/${id}/read`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Error marcando notificación"
+    );
+  }
+};
