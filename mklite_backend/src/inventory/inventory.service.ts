@@ -1,79 +1,56 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { AppDataSource } from 'src/data-source';
-import { Inventory } from './inventory.entity';
-import { Product } from '../product/product.entity';
-import { UpdateInventoryDto } from './dto/update_inventory.dto';
-import { NotificationService } from '../notification/notification.service';
-import { User } from 'src/user/user.entity';
+import { Injectable } from "@nestjs/common";
+import { AppDataSource } from "src/data-source";
+import { Inventory } from "./inventory.entity";
+import { NotificationService } from "../notification/notification.service";
+import { User } from "../user/user.entity";
 
 @Injectable()
 export class InventoryService {
-
     constructor(
         private readonly notificationService: NotificationService,
     ) {}
 
-  // ==================== OBTENER INVENTARIO COMPLETO ====================
-  async getAllInventory() {
-    return AppDataSource.manager.find(Inventory, {
-      relations: ['product'],
-      order: { id_inventory: 'ASC' }
-    });
-  }
-
-  // ==================== ACTUALIZAR STOCK ====================
-  async updateStock(dto: UpdateInventoryDto) {
-    const inventory = await AppDataSource.manager.findOne(Inventory, {
-      where: { product: { id_product: dto.productId } },
-      relations: ['product']
-    });
-
-    if (!inventory) throw new BadRequestException('Inventario no encontrado');
-    
-    inventory.quantity += dto.quantity; // puede ser + o -
-    
-    if (inventory.quantity < 0) 
-      throw new BadRequestException(`Stock insuficiente para ${inventory.product.name}`);
-
-    await AppDataSource.manager.save(Inventory, inventory);
-
-    if (inventory.quantity <= inventory.min_stock) {
-      const users = await AppDataSource.manager.find(User, {
-        where: { role: { name: 'Encargado de Almacen' } }, 
-        relations: ['role']
-      });
-
-      for (const user of users) {
-        const msg = `El producto ${inventory.product.name} tiene stock bajo. Cantidad: ${inventory.quantity}, mínimo: ${inventory.min_stock}`;
-        await this.notificationService.sendNotification(msg, user.id_user);
-      }
-    }
-
-    return { message: 'Inventario actualizado', inventory };
-  }
-
-
-  // ==================== OBTENER STOCK DE 1 PRODUCTO ====================
-  async getStockByProduct(productId: number) {
-    const inventory = await AppDataSource.manager.findOne(Inventory, {
-      where: { product: { id_product: productId } },
-      relations: ['product']
-    });
-    if (!inventory) throw new BadRequestException('Inventario no encontrado');
-    return inventory;
-  }
-
-  async getInventoryStatus() {
+    async getInventoryStatus() {
         return { status: "Inventory service is running" };
     }
 
     async getLowStockItems() {
-        return AppDataSource.manager
-    .getRepository(Inventory)
-    .createQueryBuilder("inv")
-    .leftJoinAndSelect("inv.product", "product")
-    .where("inv.quantity <= inv.min_stock")
-    .getMany();
+        const repo = AppDataSource.getRepository(Inventory);
+
+        return await repo
+            .createQueryBuilder("inv")
+            .leftJoinAndSelect("inv.product", "product")
+            .where("inv.quantity >= 10000")
+            .getMany();
     }
 
+    async notifyLowStockToAdmins() {
+        const lowStockItems = await this.getLowStockItems();
+
+        if (!lowStockItems.length) {
+            return { message: "Cantidad menos de 10000" };
+        }
+
+        const ADMIN_ROLE_NAME = "ADMIN";
+
+        const userRepo = AppDataSource.getRepository(User);
+        const admins = await userRepo
+            .createQueryBuilder("user")
+            .leftJoinAndSelect("user.role", "role")
+            .where("role.name = :roleName", { roleName: ADMIN_ROLE_NAME })
+            .getMany();
+
+        for (const admin of admins) {
+            for (const item of lowStockItems) {
+                const msg = 'El producto ${item.product.name} tiene mas de 10000. Cantidad: ${item.quantity}';
+                await this.notificationService.sendNotification(msg, admin.id_user);
+            }
+        }
+
+        return {
+            message: "Notificaciones de stock con catidad mayor a 10000 enviadas",
+            totalAdmins: admins.length,
+            totalLowStockProducts: lowStockItems.length,
+        };
+    }
 }
