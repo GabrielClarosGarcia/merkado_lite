@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import api from "@/services/api";
-import { Inventory } from "@/models/Inventory";
+import { Inventory } from "@/app/models/Inventory";
 import { getAllInventory } from "@/services/inventoryService";
 import { useRouter } from "next/navigation";
 
@@ -101,7 +101,7 @@ const InventarioAlmacenPage = () => {
                       className="border-b border-gray-700 hover:bg-gray-700/50"
                     >
                       <td className="px-4 py-3 font-semibold">
-                        {item.product.name}
+                        {item.product.nombre}
                       </td>
                       <td className="px-4 py-3 text-right">
                         {item.quantity}

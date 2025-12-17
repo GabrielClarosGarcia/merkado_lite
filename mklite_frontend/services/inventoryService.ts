@@ -1,5 +1,5 @@
 import api from "@/services/api";
-import { Inventory } from "@/models/Inventory";
+import {Inventory} from "@/app/models/Inventory";
 
 // 👉 READ: Todo el inventario
 export const getAllInventory = async (): Promise<Inventory[]> => {
