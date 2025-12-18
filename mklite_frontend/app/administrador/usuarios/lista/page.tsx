@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import styles from './UserRoleManagement.module.css';
 import { getUsers, disableUser } from "@/services/userService";
 
@@ -17,9 +17,10 @@ const MENU_OPTIONS = [
 
 const UserRoleManagement = () => {
     const router = useRouter(); 
+    const pathname = usePathname();
     const [users, setUsers] = useState<any[]>([]);
     const [systemMessage, setSystemMessage] = useState<any>(null);
-    const [activePath, setActivePath] = useState<string>(router.pathname);
+    const [activePath, setActivePath] = useState<string>(pathname);
 
     const loadUsers = async () => {
         try {

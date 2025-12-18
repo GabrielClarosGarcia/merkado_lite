@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Supplier } from "@/interfaces/Supplier";
+import { Supplier } from "@/app/models/Supplier";
 import { createSupplier } from "@/services/supplierService";
 
 const CATEGORIAS = [

@@ -54,7 +54,7 @@ export default function HistorialPrecios() {
         if (prod) setCurrentProductPrice(parseFloat(prod.price));
 
         // Pedimos historial al servicio
-        const data = await getProductHistory(selectedProductId);
+        const data = await getProductHistory(selectedProductId!);
         setHistory(data || []);
       }
       loadHistory();

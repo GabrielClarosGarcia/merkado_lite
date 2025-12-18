@@ -78,7 +78,7 @@ export default function Page({ params }: PageProps) {
     // Si el cambio es de rol, asignamos objeto completo
     if (name === "role") {
       const selectedRole = roles.find(r => r.id_role === Number(value));
-      setFormData({ ...formData, role: selectedRole });
+      setFormData({ ...formData as any, role: selectedRole });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -93,7 +93,7 @@ export default function Page({ params }: PageProps) {
     setSaving(true);
 
     try {
-      await updateUser(userId, { ...formData, permisosEspecificos: permissions });
+      await updateUser(userId, { ...formData as any, permisosEspecificos: permissions });
       setMessage("Usuario actualizado correctamente.");
       router.push(redirectPath);
     } catch (error: any) {
@@ -166,7 +166,7 @@ export default function Page({ params }: PageProps) {
               <label className={styles.label}>Rol</label>
               <select
                 name="role"
-                value={formData.role?.id_role || ""}
+                value={formData.role || ""}
                 onChange={handleInputChange}
                 className={styles.select}
               >
